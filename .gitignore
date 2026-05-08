@@ -1,0 +1,6 @@
+/dist/
+/hujson
+/hujson.exe
+*.test
+*.out
+coverage.*
