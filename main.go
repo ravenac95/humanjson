@@ -20,7 +20,8 @@ on stdout.
 
 With no file arguments, hujson reads from stdin. Pass "-" to mean stdin
 explicitly. Pass multiple files to write each converted document to stdout in
-order.
+order, separated by newlines. The result is a stream of JSON values (consumable
+by tools like jq), not a single valid JSON document.
 
 Options:
   -version    Print the version and exit.

@@ -49,7 +49,7 @@ echo "Building hujson ${VERSION} for ${GOOS}/${GOARCH}..."
       .
 )
 
-SAFE_VERSION="$(printf '%s' "$VERSION" | tr '/ ' '__')"
+SAFE_VERSION="$(printf '%s' "$VERSION" | tr -c 'A-Za-z0-9._-' '_')"
 ARCHIVE_NAME="hujson_${SAFE_VERSION}_${GOOS}_${GOARCH}.tar.gz"
 ARCHIVE_PATH="${OUTDIR_ABS}/${ARCHIVE_NAME}"
 
