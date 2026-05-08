@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -111,5 +112,99 @@ func TestConvertMultipleFilesConcatenated(t *testing.T) {
 	}
 	if first["a"] != float64(1) || second["b"] != float64(2) {
 		t.Errorf("got first=%v second=%v", first, second)
+	}
+}
+
+func TestRunWritesToOutputFile(t *testing.T) {
+	dir := t.TempDir()
+	in := filepath.Join(dir, "in.jsonc")
+	out := filepath.Join(dir, "out.json")
+	if err := os.WriteFile(in, []byte(`{ "a": 1, /* c */ "b": [1, 2,], }`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	// stdout sink should stay untouched when -o is set.
+	var stdout bytes.Buffer
+	if err := run([]string{in}, out, strings.NewReader(""), &stdout); err != nil {
+		t.Fatal(err)
+	}
+	if stdout.Len() != 0 {
+		t.Errorf("expected empty stdout when writing to file, got %q", stdout.String())
+	}
+
+	data, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var v map[string]any
+	if err := json.Unmarshal(data, &v); err != nil {
+		t.Fatalf("output file is not valid JSON: %v\n%s", err, data)
+	}
+	if v["a"] != float64(1) {
+		t.Errorf("a = %v, want 1", v["a"])
+	}
+}
+
+func TestRunDefaultsToStdout(t *testing.T) {
+	var stdout bytes.Buffer
+	err := run(nil, "", strings.NewReader(`{"a":1,}`), &stdout)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var v map[string]any
+	if err := json.Unmarshal(stdout.Bytes(), &v); err != nil {
+		t.Fatalf("stdout is not valid JSON: %v\n%s", err, stdout.String())
+	}
+	if v["a"] != float64(1) {
+		t.Errorf("a = %v, want 1", v["a"])
+	}
+}
+
+func TestRunWrapsErrorWithPath(t *testing.T) {
+	err := run([]string{"-"}, "", strings.NewReader("not json"), io.Discard)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "<stdin>") {
+		t.Errorf("error %q should mention <stdin>", err)
+	}
+}
+
+func TestRunOutputFileCreateError(t *testing.T) {
+	// Path under a non-existent directory should fail at os.Create.
+	bogus := filepath.Join(t.TempDir(), "does-not-exist", "out.json")
+	err := run(nil, bogus, strings.NewReader(`{"a":1}`), io.Discard)
+	if err == nil {
+		t.Fatal("expected error creating output file")
+	}
+}
+
+func TestRootCmdEndToEnd(t *testing.T) {
+	dir := t.TempDir()
+	in := filepath.Join(dir, "in.jsonc")
+	out := filepath.Join(dir, "out.json")
+	if err := os.WriteFile(in, []byte(`{"a":1,/*c*/}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	cmd := newRootCmd()
+	cmd.SetArgs([]string{"-o", out, in})
+	cmd.SetIn(strings.NewReader(""))
+	cmd.SetOut(io.Discard)
+	cmd.SetErr(io.Discard)
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var v map[string]any
+	if err := json.Unmarshal(data, &v); err != nil {
+		t.Fatalf("output is not valid JSON: %v\n%s", err, data)
+	}
+	if v["a"] != float64(1) {
+		t.Errorf("a = %v, want 1", v["a"])
 	}
 }

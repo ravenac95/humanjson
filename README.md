@@ -24,18 +24,26 @@ archives.
 ## Usage
 
 ```sh
-hujson [file ...]
+hujson [flags] [file ...]
 ```
 
-With no arguments, `hujson` reads from stdin. Pass `-` to mean stdin
-explicitly. Pass multiple files to convert each in order.
+With no file arguments, `hujson` reads from stdin. Pass `-` to mean stdin
+explicitly. Pass multiple files to convert each in order — the result is a
+stream of JSON values separated by newlines (consumable by tools like `jq`),
+not a single valid JSON document.
+
+By default, `hujson` writes to stdout. Use `-o`/`--output` to write to a file
+instead.
 
 ```sh
 # pipe a JSONC file through to jq
 cat config.jsonc | hujson | jq .
 
-# convert a file to JSON
+# convert a file, writing to stdout
 hujson config.jsonc > config.json
+
+# convert a file, writing directly to another file
+hujson -o config.json config.jsonc
 ```
 
 Comments and trailing commas are removed; the output is valid JSON. The
