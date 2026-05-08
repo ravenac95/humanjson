@@ -104,6 +104,6 @@ jobs:
           fi
           gh release create "$RELEASE_TAG" \
             --title "$RELEASE_TAG" \
-            --notes "humanjson $RELEASE_TAG — built from \`$COMMIT_SHA\`" \
+            --notes "hujson-cli $RELEASE_TAG — built from \`$COMMIT_SHA\`" \
             "${flags[@]}" \
             dist/*.tar.gz dist/SHA256SUMS

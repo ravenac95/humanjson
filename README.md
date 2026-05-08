@@ -1,4 +1,4 @@
-# humanjson
+# hujson-cli
 
 A stupidly simple CLI to convert JSONC / HuJSON (JSON with comments and
 trailing commas) into normal JSON on stdout. Available as a single static
@@ -18,8 +18,8 @@ sudo install -m 0755 hujson /usr/local/bin/hujson
 ```
 
 Each release ships archives for `linux/amd64`, `linux/arm64`,
-`darwin/amd64`, and `darwin/arm64`, plus per-archive `.sha256` files and
-a combined `SHA256SUMS` file.
+`darwin/amd64`, and `darwin/arm64`, plus a `SHA256SUMS` file covering all
+archives.
 
 ## Usage
 

@@ -1,4 +1,4 @@
-module github.com/ravenac95/humanjson
+module github.com/ravenac95/hujson-cli
 
 go 1.24.7
 
